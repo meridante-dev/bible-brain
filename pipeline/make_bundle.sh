@@ -1,35 +1,47 @@
 #!/usr/bin/env bash
-# Package Bible-Brain as a self-contained, offline-ready bundle for another computer.
-# Includes the code, docs, the visualization, AND the built data pool (data/*.parquet) —
-# but NOT the 112MB rebuild cache, .git, or __pycache__. Everything the target needs to
-# query, visualize, and serve the brain with zero internet.
+# Package Bible-Brain as a standalone, offline zip for another computer.
 #
-# Run:  bash pipeline/make_bundle.sh  [output_dir]
+#   bash pipeline/make_bundle.sh            # STANDALONE (default): zero-install.
+#       Ships the SQLite brain + query.py + the visualization + docs. Queryable with
+#       nothing but Python (sqlite3 is stdlib) — no pip, no duckdb, no internet ever.
+#
+#   bash pipeline/make_bundle.sh --full     # adds the parquet pool + pipeline + MCP server,
+#       for rebuilding or plugging into Claude as an MCP brain (those need pip: duckdb/mcp).
+#
+# Second arg = output dir (default: $HOME).
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT_DIR="${1:-$HOME}"
-STAMP="$(python3 -c 'import datetime,sys; sys.stdout.write("")' 2>/dev/null; echo)"
-ZIP="$OUT_DIR/bible-brain-bundle.zip"
+MODE="standalone"; OUT_DIR="$HOME"
+for a in "$@"; do case "$a" in --full) MODE="full";; *) OUT_DIR="$a";; esac; done
+cd "$ROOT"
 
-if ! ls "$ROOT"/data/*.parquet >/dev/null 2>&1; then
-  echo "No data/*.parquet found — build the pool first (see README). Aborting."; exit 1
+if [ ! -f data/bible-brain.sqlite ]; then
+  echo "Building the SQLite brain first…"; python3 pipeline/export_sqlite.py
 fi
 
-rm -f "$ZIP"
-cd "$ROOT"
-# Include everything tracked-worthy + the parquet pool; exclude bulk cache and junk.
-zip -r -q "$ZIP" . \
-  -x 'data/cache/*' \
-  -x '.git/*' \
-  -x '*/__pycache__/*' -x '__pycache__/*' \
-  -x '*.pyc' \
-  -x '.DS_Store' -x '*/.DS_Store'
+if [ "$MODE" = "full" ]; then
+  ZIP="$OUT_DIR/bible-brain-full.zip"; rm -f "$ZIP"
+  zip -r -q "$ZIP" . -x 'data/cache/*' -x '.git/*' -x '*/__pycache__/*' -x '__pycache__/*' \
+      -x '*.pyc' -x '.DS_Store' -x '*/.DS_Store'
+  DESC="everything: SQLite + parquet pool + pipeline + MCP server + viz"
+else
+  ZIP="$OUT_DIR/bible-brain-standalone.zip"; rm -f "$ZIP"
+  # zero-install set only: the SQLite brain, the stdlib query tool, the viz, the docs.
+  zip -q "$ZIP" \
+      query.py index.html requirements.txt \
+      README.md SETUP.md CONSTITUTION.md SOURCES.md \
+      data/bible-brain.sqlite \
+      viz/index.html \
+      index/MANIFEST.md index/messianic-threads.md \
+      interpretive/prophecies.yaml \
+      install.sh
+  DESC="zero-install: SQLite brain + query.py + viz + docs (no pip, no internet)"
+fi
 
 SIZE="$(du -h "$ZIP" | awk '{print $1}')"
 echo "→ $ZIP  ($SIZE)"
-echo "   contains: code + docs + viz/index.html + data/*.parquet (the pool)"
+echo "   $DESC"
 echo
 echo "On the other computer:"
-echo "   1. unzip bible-brain-bundle.zip -d bible-brain && cd bible-brain"
-echo "   2. bash install.sh          # installs deps, offline smoke test, prints next steps"
-echo "   Everything then runs with NO internet."
+echo "   unzip $(basename "$ZIP") -d bible-brain && cd bible-brain && bash install.sh"
+[ "$MODE" = "standalone" ] && echo "   Then: python3 query.py quotation \"Isaiah 7:14\"   ·   open viz/index.html"

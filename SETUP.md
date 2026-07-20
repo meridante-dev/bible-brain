@@ -8,32 +8,39 @@ already-built data, the target machine never has to go online.
 There are two ways to move it. Pick by whether the target has internet + the two upstream
 substrates.
 
-## Option A — Portable bundle (recommended; fully offline) ✅
+## Option A — Standalone bundle (recommended; zero-install, fully offline) ✅
 
-Ship the code **and** the built data as one archive. Nothing is fetched on arrival.
+Ships the brain as a single **SQLite file** + a **stdlib-only** query tool + the
+visualization. The recipient needs **nothing installed** — `query.py` uses Python's built-in
+`sqlite3` (no pip, no duckdb), and `viz/index.html` opens in any browser. No internet, ever.
 
 **On this machine:**
 ```bash
-bash pipeline/make_bundle.sh            # -> ~/bible-brain-bundle.zip  (~23 MB)
+bash pipeline/make_bundle.sh            # -> ~/bible-brain-standalone.zip  (~30 MB)
 ```
 Transfer the zip however you like — USB drive, AirDrop, a cloud folder, `scp`.
 
-**On the other computer:**
+**On the other computer** (nothing to install):
 ```bash
-unzip bible-brain-bundle.zip -d bible-brain
-cd bible-brain
-bash install.sh                          # installs deps, runs an OFFLINE smoke test,
-                                         # prints the exact commands with local paths
+unzip bible-brain-standalone.zip -d bible-brain && cd bible-brain
+bash install.sh                          # offline smoke test + prints the commands
+python3 query.py quotation "Isaiah 7:14" # MT · LXX · NT, from Python stdlib alone
+open viz/index.html                      # the visualization, self-contained
 ```
-`install.sh` needs the internet only to `pip install duckdb` (once). If the target already has
-`duckdb` (and `mcp` for the server), the whole thing is **100% offline** — including the
-visualization: just open `viz/index.html` in any browser.
 
-The only per-machine detail is the **absolute path** in the MCP registration — `install.sh`
-prints it filled in for that machine, e.g.:
+`query.py` covers `stats · verse · quotation · interlinear · concordance · define · thread ·
+threads · search`. **Even lighter:** for someone who only wants to *look*, `viz/index.html` (64
+KB) is a complete standalone by itself — double-click it, no unzip, no Python.
+
+### Want the MCP server / rebuild ability too?
+
 ```bash
-claude mcp add bible-brain -- python3 /Users/you/bible-brain/mcp-server/server.py
+bash pipeline/make_bundle.sh --full     # -> ~/bible-brain-full.zip
 ```
+The `--full` bundle also carries the parquet pool, the pipeline, and the MCP server. Those need
+one `pip install duckdb mcp` (internet once) — use it if the target should plug into Claude as
+an MCP brain or regenerate data. `install.sh` prints the `claude mcp add …` line with the
+correct local path.
 
 ## Option B — Clone + rebuild (needs internet + the substrates)
 
