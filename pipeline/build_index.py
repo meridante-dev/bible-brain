@@ -35,6 +35,10 @@ def main():
     con = duckdb.connect()
     con.execute(f"CREATE VIEW i AS SELECT * FROM '{D / 'interpretive.parquet'}'")
     con.execute(f"CREATE VIEW v AS SELECT * FROM '{D / 'verses.parquet'}'")
+    iw = D / "interp_words.parquet"
+    has_iw = iw.exists()
+    if has_iw:
+        con.execute(f"CREATE VIEW iw AS SELECT * FROM '{iw}'")
 
     threads = con.sql("""
         SELECT id, category, confidence, title,
@@ -64,7 +68,15 @@ def main():
             lines.append(f"### {title}")
             lines.append(f"*{note}*  \n**Confidence — {conf}** ({CONF_NOTE[conf]})  ")
             lines.append(f"**Tanakh:** {', '.join(tk)} → **NT:** {', '.join(nt)}  ")
-            lines.append(f"**Basis:** {basis}\n")
+            lines.append(f"**Basis:** {basis}  ")
+            if has_iw:
+                words = con.sql(f"""SELECT lang, strongs, lemma, translit, gloss
+                                    FROM iw WHERE id = '{tid}' ORDER BY lang DESC""").fetchall()
+                if words:
+                    parts = [f"{lemma} ({translit}, {strongs}, “{gloss}”)"
+                             for lang, strongs, lemma, translit, gloss in words]
+                    lines.append(f"**Key words:** {' · '.join(parts)}")
+            lines.append("")
 
     (IDX / "messianic-threads.md").write_text("\n".join(lines))
 

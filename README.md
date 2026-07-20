@@ -19,6 +19,7 @@ them read-only, and adds the interpretive layer they deliberately leave out.
 | **Septuagint** | **21,863 LXX verses** (Swete 1930, CC BY-SA) — the Greek OT the NT quotes; aligned to the Masoretic refs (96.5%) so you can set MT · LXX · NT side by side |
 | **Corpus apparatus** | **114,595 cross-references** (OpenBible.info, CC-BY) — 84k NT↔NT, 30k NT→Tanakh, resolved against the unified corpus |
 | **Messianic layer** | **24 authored threads → 63 edges** (prophecy→fulfillment, type→antitype, canon-spanning themes), each graded + source-grounded → [`index/messianic-threads.md`](index/messianic-threads.md) |
+| **Word-grounded threads** | **12 pivotal words across 7 threads** — the Hebrew & Greek terms that carry each connection (*almah→parthenos*, *seh→amnos*, *nachash→ophis*…), each **validated** to occur in the thread's own verses, with the LXX bridge shown automatically |
 
 ## The two upstream substrates (read-only)
 
@@ -65,6 +66,12 @@ To add a thread, append an entry (id, category, tanakh, nt, confidence, basis, n
 dangling or mis-oriented edges — so the confession always points at real Scripture. Confidence
 discipline is load-bearing: `high` means the NT itself cites the text; don't inflate it.
 
+Optionally add `key_words: { hebrew: [H####], greek: [G####] }` — the pivotal terms that carry
+the connection. The compiler **validates that each word actually occurs in the thread's own
+verses** (word-grounding is a checked assertion, not decoration) and joins the lexicon for
+glosses. `query_brain.py thread <id>` then shows them and auto-detects when the LXX of the
+Tanakh anchor already reads the NT's Greek word.
+
 ## Data model
 
 - `verses.parquet` — `ref, book, canon, chapter, verse, text_en, text_orig, orig_lang, version, license, layer, ord`
@@ -73,6 +80,7 @@ discipline is load-bearing: `high` means the NT itself cites the text; don't inf
 - `lxx.parquet` — `ref (MT-aligned), lxx_ref (native), book, chapter, verse, text_lxx, version, license, source, layer, resolved` (join `lxx.ref = verses.ref` for Tanakh)
 - `bridge.parquet` — `from_ref, from_book, from_canon, to_ref, to_range, to_canon, votes, source, license, layer, resolved`
 - `interpretive.parquet` — `id, category, title, from_ref, from_range, to_ref, to_range, confidence, basis, note, layer`
+- `interp_words.parquet` — `id, lang, strongs, lemma, translit, gloss` (the pivotal words per thread; join `interp_words.id = interpretive.id`)
 
 ## Relationship to the substrates
 

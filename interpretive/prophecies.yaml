@@ -30,6 +30,7 @@ prophecies:
     confidence: high
     basis: "Matthew 1:22-23 quotes Isaiah 7:14 and names its fulfillment ('Immanuel')."
     note: "The sign of Immanuel read as the incarnation."
+    key_words: { hebrew: [H5959], greek: [G3933] }   # almah -> (LXX) parthenos -> parthenos
 
   - id: born-in-bethlehem
     category: messianic-prophecy
@@ -138,6 +139,7 @@ prophecies:
     confidence: high
     basis: "Hebrews 5-7 quotes Psalm 110:4; Jesus cites Psalm 110:1 (Matthew 22:44)."
     note: "A king-priest whose order predates and outlasts Levi."
+    key_words: { hebrew: [H3548], greek: [G2409] }   # kohen -> hiereus (priest)
 
   - id: new-covenant
     category: messianic-prophecy
@@ -147,6 +149,7 @@ prophecies:
     confidence: high
     basis: "Hebrews 8:8-12 quotes Jeremiah 31 in full; Luke 22:20 names the new covenant."
     note: "The promised covenant, inaugurated in the cup."
+    key_words: { hebrew: [H1285], greek: [G1242] }   # berith -> diatheke (covenant)
 
   - id: spirit-poured-out
     category: messianic-prophecy
@@ -156,6 +159,7 @@ prophecies:
     confidence: high
     basis: "Peter at Pentecost (Acts 2:16-21) quotes Joel 2:28-32 as fulfilled."
     note: "Prophecy, dreams, and deliverance for all who call on the Name."
+    key_words: { greek: [G4151] }   # pneuma (Spirit); Heb. ruach anchor sits in Joel's split versification
 
   # ── Type / foreshadow: classical typology, offered as the community's reading ──
   - id: passover-lamb
@@ -166,6 +170,7 @@ prophecies:
     confidence: high
     basis: "1 Corinthians 5:7 states 'Christ our Passover is sacrificed'; John 1:29 the Lamb."
     note: "The blood on the doorpost read as the atonement's shadow."
+    key_words: { hebrew: [H7716], greek: [G0286] }   # seh (lamb) -> amnos (Lamb)
 
   - id: bronze-serpent
     category: type
@@ -175,6 +180,7 @@ prophecies:
     confidence: high
     basis: "John 3:14-15 makes the type explicit: 'as Moses lifted up the serpent...'"
     note: "Look and live — the lifted-up Son."
+    key_words: { hebrew: [H5175], greek: [G3789] }   # nachash -> ophis (serpent)
 
   - id: jonah-three-days
     category: type
@@ -221,6 +227,7 @@ prophecies:
     confidence: graded
     basis: "The protoevangelium read forward; Romans 16:20 echoes crushing the serpent."
     note: "The canon's first promise, traced to its last book."
+    key_words: { hebrew: [H2233] }   # zera (seed/offspring) — the promised seed
 
   - id: son-of-david-throne
     category: thematic-thread

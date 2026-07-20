@@ -24,17 +24,38 @@ import yaml
 
 # "Isaiah 53:1-12" -> anchor "Isaiah 53:1" (must exist in corpus), label kept for display.
 # The corpus is verse-level; a range edge is anchored on its first verse.
-_RANGE = re.compile(r"^(.+ \d+):(\d+)-\d+$")
+_RANGE = re.compile(r"^(.+ \d+):(\d+)-(\d+)$")
 
 
 def anchor_of(ref):
     m = _RANGE.match(ref.strip())
     return f"{m.group(1)}:{m.group(2)}" if m else ref.strip()
 
+
+def expand_refs(ref):
+    """A ref or single-chapter range -> the list of verse refs it covers."""
+    m = _RANGE.match(ref.strip())
+    if not m:
+        return [ref.strip()]
+    book_ch, v1, v2 = m.group(1), int(m.group(2)), int(m.group(3))
+    return [f"{book_ch}:{v}" for v in range(v1, v2 + 1)]
+
+
+_BASE = re.compile(r"^([GH]\d+)")
+
+
+def base(strongs):
+    """STEPBible disambiguates Strong's (H2233H, G4151G); key_words name the base."""
+    m = _BASE.match(strongs)
+    return m.group(1) if m else strongs
+
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "interpretive"
 VERSES = ROOT / "data" / "verses.parquet"
+WORDS = ROOT / "data" / "words.parquet"
+LEXICON = ROOT / "data" / "lexicon.parquet"
 OUT = ROOT / "data" / "interpretive.parquet"
+OUT_WORDS = ROOT / "data" / "interp_words.parquet"
 
 VALID_CATEGORIES = {"messianic-prophecy", "type", "thematic-thread"}
 VALID_CONFIDENCE = {"high", "medium", "graded"}
@@ -55,8 +76,17 @@ def main():
     known = {r[0] for r in con.sql(f"SELECT ref FROM '{VERSES}'").fetchall()}
     canon = dict(con.sql(f"SELECT ref, canon FROM '{VERSES}'").fetchall())
 
+    # Word layer for grounding key_words (ref -> set of Strong's). Optional but, when
+    # present, key_words are VALIDATED: a pivotal word must actually occur in the thread's
+    # own verses, so the word-grounding is a checked assertion, not a decoration.
+    word_index = {}
+    if WORDS.exists():
+        for ref, strongs in con.sql(
+                f"SELECT ref, strongs FROM '{WORDS}' WHERE strongs <> ''").fetchall():
+            word_index.setdefault(ref, set()).add(base(strongs))
+
     entries = load_entries()
-    rows, errors = [], []
+    rows, errors, kw_rows = [], [], []
     for e in entries:
         eid = e.get("id", "<no-id>")
         if e.get("category") not in VALID_CATEGORIES:
@@ -84,6 +114,25 @@ def main():
                              e["confidence"], e["basis"], e.get("note", ""),
                              "interpretive"))
 
+        # Word-grounding: validate each pivotal Strong's occurs in the thread's own verses.
+        kw = e.get("key_words") or {}
+        tk_verses = {v for label, _ in tk for v in expand_refs(label)}
+        nt_verses = {v for label, _ in nt for v in expand_refs(label)}
+        for lang, side_verses, expect in [("Hebrew", tk_verses, "H"),
+                                          ("Greek", nt_verses, "G")]:
+            for strongs in (kw.get(lang.lower()) or []):
+                if not strongs.startswith(expect):
+                    errors.append(f"{eid}: {lang} key_word {strongs!r} should start '{expect}'")
+                    continue
+                if word_index:
+                    hit = any(strongs in word_index.get(v, ()) for v in side_verses)
+                    if not hit:
+                        errors.append(
+                            f"{eid}: key_word {strongs} not found in any {lang} verse "
+                            f"of the thread ({sorted(side_verses)[:3]}…)")
+                        continue
+                kw_rows.append((eid, lang, strongs))
+
     if errors:
         print("✗ interpretive layer has errors (nothing written):", file=sys.stderr)
         for err in errors:
@@ -97,8 +146,26 @@ def main():
     con.executemany("INSERT INTO interp VALUES (?,?,?,?,?,?,?,?,?,?,?)", rows)
     con.execute(f"COPY interp TO '{OUT}' (FORMAT parquet)")
 
+    # The word-grounding table: pivotal words per thread, enriched with lexicon lemma+gloss.
+    # Lexicon is dStrong-keyed too, so match on the base number (first entry wins).
+    lex_base = {}
+    if LEXICON.exists():
+        for s, lemma, translit, gloss in con.sql(
+                f"SELECT strongs, lemma, translit, gloss FROM '{LEXICON}'").fetchall():
+            lex_base.setdefault(base(s), (lemma, translit, gloss))
+    iw_rows = [(eid, lang, strongs, *lex_base.get(strongs, (None, None, None)))
+               for (eid, lang, strongs) in kw_rows]
+    con.execute("""CREATE TABLE interp_words(
+        id VARCHAR, lang VARCHAR, strongs VARCHAR,
+        lemma VARCHAR, translit VARCHAR, gloss VARCHAR)""")
+    if iw_rows:
+        con.executemany("INSERT INTO interp_words VALUES (?,?,?,?,?,?)", iw_rows)
+    con.execute(f"COPY interp_words TO '{OUT_WORDS}' (FORMAT parquet)")
+
     print(f"→ data/interpretive.parquet: {len(rows):,} edges from "
           f"{len(entries)} authored threads")
+    print(f"→ data/interp_words.parquet: {len(kw_rows)} word-grounded pivots "
+          f"across {len({r[0] for r in kw_rows})} threads")
     for cat, n, thr in con.sql("""
             SELECT category, count(*) edges, count(DISTINCT id) threads
             FROM interp GROUP BY category ORDER BY category""").fetchall():

@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 D = ROOT / "data"
 con = duckdb.connect()
 for name, f in [("v", "verses"), ("b", "bridge"), ("i", "interpretive"), ("w", "words"),
-                ("l", "lexicon"), ("x", "lxx")]:
+                ("l", "lexicon"), ("x", "lxx"), ("iw", "interp_words")]:
     p = D / f"{f}.parquet"
     if p.exists():
         con.execute(f"CREATE VIEW {f} AS SELECT * FROM '{p}'")
@@ -101,6 +101,27 @@ def thread(tid):
             _, t = _text(ref)
             t = (t or "")[:150]
             print(f"  [{side:<6}] {ref:<18} {t}")
+    # Word-grounding: the pivotal Hebrew/Greek terms, and the LXX bridge between them.
+    if _has("interp_words"):
+        kw = con.sql(f"""SELECT lang, strongs, lemma, translit, gloss FROM interp_words
+                         WHERE id = '{tid}' ORDER BY lang DESC""").fetchall()
+        if kw:
+            print("\n  the words that carry the connection [word-grounded]:")
+            for lang, strongs, lemma, translit, gloss in kw:
+                print(f"    [{lang:<6}] {strongs:<7} {lemma or ''} ({translit or ''}) — "
+                      f"“{gloss or ''}”")
+            # Does the LXX of a Tanakh anchor already read the NT's Greek word? (the hinge)
+            if _has("lxx"):
+                greek = [k for k in kw if k[0] == "Greek" and k[3]]
+                tanakh_refs = {a for a, _ in pairs}
+                for lang, strongs, lemma, translit, gloss in greek:
+                    stem = (lemma or "")[:4]
+                    for ar in tanakh_refs:
+                        lx = con.sql(f"SELECT text_lxx FROM lxx WHERE ref = '{ar}'").fetchone()
+                        if lx and stem and stem in lx[0]:
+                            print(f"    ↳ the LXX of {ar} already reads {lemma} — "
+                                  f"the very word the NT quotes.")
+                            break
 
 
 def threads():
