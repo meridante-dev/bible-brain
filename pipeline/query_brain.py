@@ -10,6 +10,7 @@ Usage:
   python3 pipeline/query_brain.py interlinear "Isaiah 7:14" # the verse word-by-word in the original
   python3 pipeline/query_brain.py concordance H5921         # every occurrence of a Strong's # across the canon
   python3 pipeline/query_brain.py concordance parthenos     # ...or search by lemma / transliteration
+  python3 pipeline/query_brain.py define H5959              # the lexicon entry for a Strong's # (BDB/Abbott-Smith)
   python3 pipeline/query_brain.py fulfills "Isaiah 7:14"    # NT fulfillments of a Tanakh verse (interpretive)
   python3 pipeline/query_brain.py roots "Matthew 1:23"      # a NT verse's Tanakh roots (interpretive)
   python3 pipeline/query_brain.py thread virgin-birth       # one Messianic thread, its refs + text
@@ -24,7 +25,8 @@ import duckdb
 ROOT = Path(__file__).resolve().parent.parent
 D = ROOT / "data"
 con = duckdb.connect()
-for name, f in [("v", "verses"), ("b", "bridge"), ("i", "interpretive"), ("w", "words")]:
+for name, f in [("v", "verses"), ("b", "bridge"), ("i", "interpretive"), ("w", "words"),
+                ("l", "lexicon")]:
     p = D / f"{f}.parquet"
     if p.exists():
         con.execute(f"CREATE VIEW {f} AS SELECT * FROM '{p}'")
@@ -162,10 +164,37 @@ def concordance(term):
         span = "spans both Tanakh & NT" if canons == 2 else "one testament"
         print(f"\n  {strongs}  {lemma or ''}  “{gloss or ''}”  —  "
               f"{hits:,} occurrences in {verses:,} verses ({span})")
+        if _has("lexicon"):
+            d = con.sql(f"SELECT definition FROM lexicon WHERE strongs = '{strongs}'").fetchone()
+            if d and d[0]:
+                print(f"    def: {d[0][:200]}")
         con.sql(f"""SELECT canon, count(*) hits, count(DISTINCT ref) verses,
                            min(ref) first_ref, max(ref) last_ref
                     FROM words WHERE strongs = '{strongs}'
                     GROUP BY canon ORDER BY canon""").show(max_width=120)
+
+
+def define(term):
+    if not _has("lexicon"):
+        print("No lexicon layer — run pipeline/fetch_lexicon.py first."); return
+    t = term.strip()
+    if t[:1] in "GgHh" and t[1:].rstrip("abAB").isdigit():
+        where = f"upper(strongs) = upper('{t}')"
+    else:
+        s = t.replace("'", "''")
+        where = f"lower(translit) = lower('{s}') OR lower(gloss) = lower('{s}')"
+    rows = con.sql(f"""SELECT strongs, lang, lemma, translit, gloss, definition
+                       FROM lexicon WHERE {where} LIMIT 5""").fetchall()
+    if not rows:
+        print(f"  no lexicon entry for '{term}'."); return
+    for strongs, lang, lemma, translit, gloss, definition in rows:
+        print(f"\n=== {strongs}  {lemma}  ({translit}, {lang})  —  “{gloss}” ===")
+        print(f"{definition}")
+        if _has("words"):
+            n = con.sql(f"SELECT count(*), count(DISTINCT ref) FROM words "
+                        f"WHERE strongs = '{strongs}'").fetchone()
+            print(f"\noccurs {n[0]:,}× in {n[1]:,} verses  "
+                  f"(→ query_brain.py concordance {strongs})")
 
 
 def _has(name):
@@ -178,7 +207,7 @@ if __name__ == "__main__":
         print(__doc__); sys.exit(0)
     cmd, args = sys.argv[1], sys.argv[2:]
     fns = {"verse": verse, "interlinear": interlinear, "concordance": concordance,
-           "fulfills": fulfills, "roots": roots,
+           "define": define, "fulfills": fulfills, "roots": roots,
            "thread": thread, "threads": lambda: threads(),
            "stats": lambda: stats()}
     if cmd not in fns:

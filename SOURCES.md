@@ -14,6 +14,7 @@ source is only wired into `pipeline/` after it appears here as **ADMIT**.
 | NT text (WEB) | getBible, via `~/new-testament` | Public Domain | upstream substrate |
 | Cross-references | OpenBible.info | CC-BY | via `~/new-testament` |
 | **Word layer (Strong's + morph + gloss)** | **STEPBible TAHOT + TAGNT** | **CC BY 4.0** | `pipeline/fetch_words.py` |
+| **Lexicon (definitions per Strong's)** | **STEPBible TBESH + TBESG** (BDB + Abbott-Smith, PD) | **CC BY 4.0** | `pipeline/fetch_lexicon.py` |
 
 ### STEPBible-Data — the word/token layer ⭐
 
