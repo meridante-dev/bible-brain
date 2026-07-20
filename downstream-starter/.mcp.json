@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bible-brain": {
+      "command": "python3",
+      "args": ["/Users/joaoamaral/Bible-Brain/mcp-server/server.py"]
+    }
+  }
+}

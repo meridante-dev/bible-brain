@@ -94,6 +94,22 @@ Tanakh anchor already reads the NT's Greek word.
 - `interpretive.parquet` — `id, category, title, from_ref, from_range, to_ref, to_range, confidence, basis, note, layer`
 - `interp_words.parquet` — `id, lang, strongs, lemma, translit, gloss` (the pivotal words per thread; join `interp_words.id = interpretive.id`)
 
+## Consume it from another project (MCP)
+
+Bible-Brain is meant to be a **pool other projects draw from** — the same way it draws from the
+Torah Brain and the NT corpus. The clean way is its MCP server:
+
+```bash
+claude mcp add bible-brain -- python3 /Users/joaoamaral/Bible-Brain/mcp-server/server.py
+```
+
+Then any Claude instance gets the whole canon as tools (`verse`, `interlinear`, `concordance`,
+`define`, `quotation`, `fulfillments`, `roots`, `thread`, `threads`, `search`, `stats`) — with
+corpus and interpretive content kept separate in the return shape. To wire a specific project,
+drop [`downstream-starter/.mcp.json`](downstream-starter/) + its `CLAUDE.md` into that project.
+See [`mcp-server/README.md`](mcp-server/README.md). (On the same machine no data is copied; the
+server reads the local `data/` pool. The pool is gitignored, so it is not in this repo.)
+
 ## Relationship to the substrates
 
 Bible-Brain **bridges by its own confession** — exactly as both substrates' constitutions
