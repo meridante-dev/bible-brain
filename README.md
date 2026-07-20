@@ -42,6 +42,18 @@ python3 pipeline/build_index.py         # -> index/ (committed human-readable fa
 
 Sources + their verified licenses are recorded in [SOURCES.md](SOURCES.md) (the gate: PD / CC0 / CC-BY / CC-BY-SA only).
 
+## Visualize
+
+```bash
+python3 pipeline/build_viz.py           # -> viz/index.html (self-contained, no external assets)
+```
+
+A single-file explorer of the whole canon on one axis: the corpus cross-reference web drawn
+as a faint underlay and the **Messianic threads as bold arcs on top** — the two layers made
+visual. Each thread opens to its three witnesses (MT Hebrew · LXX Greek · NT) and the pivotal
+words, with the LXX hinge highlighted. Open `viz/index.html` in any browser, or serve it:
+`python3 -m http.server -d viz 4455`.
+
 ## Query — one canon, two layers, never blurred
 
 ```bash
