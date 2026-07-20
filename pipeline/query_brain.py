@@ -6,12 +6,15 @@ being able to tell the CORPUS (what Scripture says) from the INTERPRETIVE layer
 (what the community confesses about it).
 
 Usage:
-  python3 pipeline/query_brain.py verse "Isaiah 53:5"     # text + corpus refs + interpretive threads
-  python3 pipeline/query_brain.py fulfills "Isaiah 7:14"   # NT fulfillments of a Tanakh verse (interpretive)
-  python3 pipeline/query_brain.py roots "Matthew 1:23"     # a NT verse's Tanakh roots (interpretive)
-  python3 pipeline/query_brain.py thread virgin-birth      # one Messianic thread, its refs + text
-  python3 pipeline/query_brain.py threads                  # list all interpretive threads
-  python3 pipeline/query_brain.py stats                    # corpus + bridge + interpretive counts
+  python3 pipeline/query_brain.py verse "Isaiah 53:5"      # text + corpus refs + interpretive threads
+  python3 pipeline/query_brain.py interlinear "Isaiah 7:14" # the verse word-by-word in the original
+  python3 pipeline/query_brain.py concordance H5921         # every occurrence of a Strong's # across the canon
+  python3 pipeline/query_brain.py concordance parthenos     # ...or search by lemma / transliteration
+  python3 pipeline/query_brain.py fulfills "Isaiah 7:14"    # NT fulfillments of a Tanakh verse (interpretive)
+  python3 pipeline/query_brain.py roots "Matthew 1:23"      # a NT verse's Tanakh roots (interpretive)
+  python3 pipeline/query_brain.py thread virgin-birth       # one Messianic thread, its refs + text
+  python3 pipeline/query_brain.py threads                   # list all interpretive threads
+  python3 pipeline/query_brain.py stats                     # corpus + bridge + interpretive counts
 """
 import sys
 from pathlib import Path
@@ -21,7 +24,7 @@ import duckdb
 ROOT = Path(__file__).resolve().parent.parent
 D = ROOT / "data"
 con = duckdb.connect()
-for name, f in [("v", "verses"), ("b", "bridge"), ("i", "interpretive")]:
+for name, f in [("v", "verses"), ("b", "bridge"), ("i", "interpretive"), ("w", "words")]:
     p = D / f"{f}.parquet"
     if p.exists():
         con.execute(f"CREATE VIEW {f} AS SELECT * FROM '{p}'")
@@ -118,6 +121,53 @@ def stats():
                    FROM interpretive GROUP BY category ORDER BY category""").show()
 
 
+def interlinear(ref):
+    if not _has("words"):
+        print("No word layer — run pipeline/fetch_words.py first."); return
+    canon, text = _text(ref)
+    if text is None:
+        print(f"'{ref}' is not in the corpus."); return
+    print(f"\n=== {ref}  [{canon}] word-by-word (STEPBible, CC BY 4.0) ===\n{text}\n")
+    con.sql(f"""SELECT word_pos AS n, surface, translit, gloss, strongs, morph
+                FROM words WHERE ref = '{ref}'
+                ORDER BY word_pos""").show(max_width=140, max_rows=60)
+
+
+def concordance(term):
+    if not _has("words"):
+        print("No word layer — run pipeline/fetch_words.py first."); return
+    # Match a Strong's number (G/H####) exactly, else search lemma/transliteration.
+    t = term.strip()
+    if t[:1] in "GgHh" and t[1:].rstrip("abAB").isdigit():
+        where = f"upper(strongs) = upper('{t}')"
+        label = f"Strong's {t.upper()}"
+    else:
+        s = t.replace("'", "''")
+        where = (f"lower(lemma) = lower('{s}') OR lower(translit) LIKE lower('%{s}%') "
+                 f"OR lower(gloss) LIKE lower('%{s}%')")
+        label = f"'{t}'"
+    # Identify which Strong's number(s) the term picks out (ranked by how often it matches)...
+    cands = [r[0] for r in con.sql(f"""SELECT strongs, count(*) c FROM words
+                WHERE ({where}) AND strongs <> ''
+                GROUP BY strongs ORDER BY c DESC LIMIT 5""").fetchall()]
+    print(f"\n=== concordance for {label} — across the whole canon ===")
+    if not cands:
+        print("  no occurrences found."); return
+    # ...then report AUTHORITATIVE stats for each Strong's number (over all its occurrences).
+    for strongs in cands:
+        lemma, gloss, hits, verses, canons = con.sql(f"""
+            SELECT any_value(lemma), any_value(gloss), count(*),
+                   count(DISTINCT ref), count(DISTINCT canon)
+            FROM words WHERE strongs = '{strongs}'""").fetchone()
+        span = "spans both Tanakh & NT" if canons == 2 else "one testament"
+        print(f"\n  {strongs}  {lemma or ''}  “{gloss or ''}”  —  "
+              f"{hits:,} occurrences in {verses:,} verses ({span})")
+        con.sql(f"""SELECT canon, count(*) hits, count(DISTINCT ref) verses,
+                           min(ref) first_ref, max(ref) last_ref
+                    FROM words WHERE strongs = '{strongs}'
+                    GROUP BY canon ORDER BY canon""").show(max_width=120)
+
+
 def _has(name):
     return con.sql(f"SELECT count(*) FROM information_schema.tables "
                    f"WHERE table_name = '{name}'").fetchone()[0] > 0
@@ -127,7 +177,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__); sys.exit(0)
     cmd, args = sys.argv[1], sys.argv[2:]
-    fns = {"verse": verse, "fulfills": fulfills, "roots": roots,
+    fns = {"verse": verse, "interlinear": interlinear, "concordance": concordance,
+           "fulfills": fulfills, "roots": roots,
            "thread": thread, "threads": lambda: threads(),
            "stats": lambda: stats()}
     if cmd not in fns:
