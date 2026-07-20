@@ -1,0 +1,5 @@
+# Bulk, regenerable corpus data — rebuilt from the upstream substrates via pipeline/.
+# The authored interpretive layer (interpretive/*.yaml) and the index ARE committed.
+data/*.parquet
+__pycache__/
+.DS_Store

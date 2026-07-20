@@ -1,0 +1,241 @@
+# The Messianic interpretive layer — Bible-Brain
+#
+# This file is the committed HEART of the project: the community's confession about how the
+# Tanakh and the New Testament read as one story. It is INTERPRETATION, not corpus data
+# (see CONSTITUTION.md, "The two layers"). Every entry is held openly as the Messianic
+# reading, grounded in the text — never asserted as a neutral finding.
+#
+# Schema per entry:
+#   id:         stable slug
+#   category:   messianic-prophecy | type | thematic-thread
+#   title:      short human title
+#   tanakh:     one or more Tanakh anchor refs (the promise / shadow / seed)
+#   nt:         one or more NT refs (the fulfillment / antitype / flowering)
+#   confidence: high    — the NT ITSELF explicitly cites/quotes this Tanakh text
+#               medium  — the NT clearly alludes, or a near-universal reading connects them
+#               graded  — a classical typological/thematic reading; offered as such, not proof
+#   basis:      what grounds the claim (the NT's own citation, or the classical reading)
+#   note:       one line of orientation
+#
+# Refs must match verses.parquet exactly (Sefaria book names for the Tanakh; e.g.
+# "Psalms", "Isaiah", "Zechariah"). Confidence discipline is load-bearing — do not inflate.
+
+prophecies:
+  # ── Messianic prophecy: the NT declares these fulfilled, quoting the Tanakh ──
+  - id: virgin-birth
+    category: messianic-prophecy
+    title: "Born of a virgin, 'God with us'"
+    tanakh: ["Isaiah 7:14"]
+    nt: ["Matthew 1:22-23"]
+    confidence: high
+    basis: "Matthew 1:22-23 quotes Isaiah 7:14 and names its fulfillment ('Immanuel')."
+    note: "The sign of Immanuel read as the incarnation."
+
+  - id: born-in-bethlehem
+    category: messianic-prophecy
+    title: "The ruler from Bethlehem"
+    tanakh: ["Micah 5:2"]
+    nt: ["Matthew 2:5-6"]
+    confidence: high
+    basis: "Matthew 2:5-6 quotes Micah 5:2 as the chief priests' answer to Herod."
+    note: "The eternal ruler comes from the least of Judah's clans."
+
+  - id: out-of-egypt
+    category: messianic-prophecy
+    title: "Out of Egypt I called my son"
+    tanakh: ["Hosea 11:1"]
+    nt: ["Matthew 2:15"]
+    confidence: high
+    basis: "Matthew 2:15 quotes Hosea 11:1; Israel's exodus recapitulated in Messiah."
+    note: "Corporate Israel and the Messiah share one calling out of Egypt."
+
+  - id: voice-in-wilderness
+    category: messianic-prophecy
+    title: "A voice preparing the way"
+    tanakh: ["Isaiah 40:3", "Malachi 3:1"]
+    nt: ["Mark 1:2-3", "Matthew 3:3"]
+    confidence: high
+    basis: "Mark 1:2-3 conflates Malachi 3:1 and Isaiah 40:3 for John the Baptist."
+    note: "The forerunner who makes the way straight."
+
+  - id: light-to-galilee
+    category: messianic-prophecy
+    title: "Light dawns on Galilee of the nations"
+    tanakh: ["Isaiah 9:1-2"]
+    nt: ["Matthew 4:14-16"]
+    confidence: high
+    basis: "Matthew 4:14-16 quotes Isaiah 9:1-2 of Messiah's Galilean ministry."
+    note: "The great light to a people in darkness."
+
+  - id: triumphal-entry
+    category: messianic-prophecy
+    title: "Your king comes, humble, on a donkey"
+    tanakh: ["Zechariah 9:9"]
+    nt: ["Matthew 21:4-5", "John 12:14-15"]
+    confidence: high
+    basis: "Matthew 21:4-5 and John 12:14-15 both quote Zechariah 9:9 at the entry."
+    note: "The gentle king, not a war-horse."
+
+  - id: betrayed-thirty-silver
+    category: messianic-prophecy
+    title: "Thirty pieces of silver, the potter's field"
+    tanakh: ["Zechariah 11:12-13"]
+    nt: ["Matthew 27:9-10"]
+    confidence: high
+    basis: "Matthew 27:9-10 cites the thirty pieces and the potter's field."
+    note: "The price of the betrayal, cast to the potter."
+
+  - id: pierced-hands-feet
+    category: messianic-prophecy
+    title: "They pierced my hands and feet / cast lots for my clothing"
+    tanakh: ["Psalms 22:16", "Psalms 22:18"]
+    nt: ["John 19:23-24", "John 19:37"]
+    confidence: high
+    basis: "John 19:24 quotes Psalm 22:18 (lots for the garment); crucifixion imagery of Ps 22."
+    note: "The psalm of the forsaken one, read at the cross."
+
+  - id: no-bone-broken
+    category: messianic-prophecy
+    title: "Not one of his bones broken"
+    tanakh: ["Exodus 12:46", "Psalms 34:20"]
+    nt: ["John 19:33-36"]
+    confidence: high
+    basis: "John 19:36 cites 'not one of his bones will be broken' (Passover lamb / Ps 34:20)."
+    note: "The Passover-lamb rule applied to the crucified Messiah."
+
+  - id: suffering-servant
+    category: messianic-prophecy
+    title: "The suffering servant, pierced for our transgressions"
+    tanakh: ["Isaiah 52:13-15", "Isaiah 53:1-12"]
+    nt: ["Acts 8:32-35", "1 Peter 2:22-25", "Matthew 8:17"]
+    confidence: high
+    basis: "Acts 8:32-35 reads Isaiah 53 of Messiah; 1 Peter 2 & Matthew 8:17 apply it."
+    note: "The central Servant Song, the atonement's Tanakh spine."
+
+  - id: rejected-cornerstone
+    category: messianic-prophecy
+    title: "The stone the builders rejected"
+    tanakh: ["Psalms 118:22-23"]
+    nt: ["Matthew 21:42", "Acts 4:11", "1 Peter 2:7"]
+    confidence: high
+    basis: "Jesus (Matthew 21:42) and Peter (Acts 4:11) quote Psalm 118:22 of the rejection."
+    note: "Rejected by builders, made the head of the corner."
+
+  - id: resurrection-not-abandoned
+    category: messianic-prophecy
+    title: "You will not abandon me to Sheol"
+    tanakh: ["Psalms 16:10"]
+    nt: ["Acts 2:25-32", "Acts 13:35-37"]
+    confidence: high
+    basis: "Peter (Acts 2:25-31) and Paul (Acts 13:35) read Psalm 16:10 as resurrection."
+    note: "The holy one not left to see corruption."
+
+  - id: priest-forever-melchizedek
+    category: messianic-prophecy
+    title: "A priest forever after the order of Melchizedek"
+    tanakh: ["Psalms 110:4", "Psalms 110:1"]
+    nt: ["Hebrews 7:17", "Hebrews 5:6", "Matthew 22:44"]
+    confidence: high
+    basis: "Hebrews 5-7 quotes Psalm 110:4; Jesus cites Psalm 110:1 (Matthew 22:44)."
+    note: "A king-priest whose order predates and outlasts Levi."
+
+  - id: new-covenant
+    category: messianic-prophecy
+    title: "A new covenant, the law written on the heart"
+    tanakh: ["Jeremiah 31:31-34"]
+    nt: ["Hebrews 8:8-12", "Luke 22:20"]
+    confidence: high
+    basis: "Hebrews 8:8-12 quotes Jeremiah 31 in full; Luke 22:20 names the new covenant."
+    note: "The promised covenant, inaugurated in the cup."
+
+  - id: spirit-poured-out
+    category: messianic-prophecy
+    title: "I will pour out my Spirit on all flesh"
+    tanakh: ["Joel 3:1-5"]  # Hebrew versification (=Joel 2:28-32 in Christian numbering)
+    nt: ["Acts 2:16-21"]
+    confidence: high
+    basis: "Peter at Pentecost (Acts 2:16-21) quotes Joel 2:28-32 as fulfilled."
+    note: "Prophecy, dreams, and deliverance for all who call on the Name."
+
+  # ── Type / foreshadow: classical typology, offered as the community's reading ──
+  - id: passover-lamb
+    category: type
+    title: "The Passover lamb → the Lamb of God"
+    tanakh: ["Exodus 12:1-13"]
+    nt: ["John 1:29", "1 Corinthians 5:7", "1 Peter 1:19"]
+    confidence: high
+    basis: "1 Corinthians 5:7 states 'Christ our Passover is sacrificed'; John 1:29 the Lamb."
+    note: "The blood on the doorpost read as the atonement's shadow."
+
+  - id: bronze-serpent
+    category: type
+    title: "The bronze serpent lifted up"
+    tanakh: ["Numbers 21:8-9"]
+    nt: ["John 3:14-15"]
+    confidence: high
+    basis: "John 3:14-15 makes the type explicit: 'as Moses lifted up the serpent...'"
+    note: "Look and live — the lifted-up Son."
+
+  - id: jonah-three-days
+    category: type
+    title: "Jonah three days in the deep"
+    tanakh: ["Jonah 2:1"]  # Hebrew versification (=Jonah 1:17)
+    nt: ["Matthew 12:39-40"]
+    confidence: high
+    basis: "Matthew 12:40 names 'the sign of Jonah' for the three days in the tomb."
+    note: "The sign given to a demanding generation."
+
+  - id: melchizedek-bread-wine
+    category: type
+    title: "Melchizedek, king-priest of Salem"
+    tanakh: ["Genesis 14:18-20"]
+    nt: ["Hebrews 7:1-10"]
+    confidence: medium
+    basis: "Hebrews 7 develops Genesis 14 into the Melchizedek priesthood argument."
+    note: "Bread and wine, a priesthood without genealogy."
+
+  - id: akedah-only-son
+    category: type
+    title: "The binding of Isaac, the only son"
+    tanakh: ["Genesis 22:1-14"]
+    nt: ["John 3:16", "Romans 8:32", "Hebrews 11:17-19"]
+    confidence: graded
+    basis: "Classical reading; Romans 8:32 echoes 'did not spare his own Son' (cf. Gen 22:12)."
+    note: "The father, the only son, the wood, the provided lamb — offered as type."
+
+  - id: adam-second
+    category: type
+    title: "Adam → the last Adam"
+    tanakh: ["Genesis 2:7", "Genesis 3:17-19"]
+    nt: ["Romans 5:14-19", "1 Corinthians 15:22", "1 Corinthians 15:45"]
+    confidence: high
+    basis: "Romans 5 and 1 Corinthians 15:45 name Christ the 'last Adam' explicitly."
+    note: "One man's fall answered by one man's obedience."
+
+  # ── Thematic thread: a promise running the length of the canon ──
+  - id: seed-of-the-woman
+    category: thematic-thread
+    title: "The seed of the woman who crushes the serpent"
+    tanakh: ["Genesis 3:15"]
+    nt: ["Galatians 4:4", "Romans 16:20", "Revelation 12:5"]
+    confidence: graded
+    basis: "The protoevangelium read forward; Romans 16:20 echoes crushing the serpent."
+    note: "The canon's first promise, traced to its last book."
+
+  - id: son-of-david-throne
+    category: thematic-thread
+    title: "The everlasting throne of David"
+    tanakh: ["II Samuel 7:12-16", "Isaiah 9:6-7"]  # Sefaria book name
+    nt: ["Luke 1:32-33", "Acts 2:29-36"]
+    confidence: high
+    basis: "Luke 1:32-33 promises the throne of David; Acts 2 argues its fulfillment."
+    note: "The Davidic covenant carried to its eternal king."
+
+  - id: lamb-slain
+    category: thematic-thread
+    title: "The Lamb, from Passover to the throne"
+    tanakh: ["Exodus 12:5-6", "Isaiah 53:7"]
+    nt: ["John 1:29", "Revelation 5:6-12"]
+    confidence: medium
+    basis: "The Lamb motif spans Exodus, Isaiah 53:7 (led like a lamb), John 1:29, Revelation 5."
+    note: "One image binding the whole canon: the Lamb slain and enthroned."
