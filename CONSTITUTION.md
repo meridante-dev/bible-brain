@@ -42,9 +42,13 @@ confession about it. That separation is the honesty of the project.
    text and apparatus. Bible-Brain ingests them through `pipeline/` and never hand-edits
    corpus data, never writes into `~/torah-brain` or `~/new-testament`.
 2. **License discipline carries over verbatim.** Only Public Domain / CC0 / CC-BY / CC-BY-SA
-   material is admitted; unknown = refuse. Every row records its `version` + `license`. Today:
-   Tanakh Hebrew (Ta'amei Hamikra, **PD**) + English (JPS 1917, **PD**) from Torah Brain; NT
-   (WEB, **PD**) + cross-references (OpenBible.info, **CC-BY**, attributed) from the NT corpus.
+   material is admitted; unknown = refuse. Every row records its `version` + `license`, and
+   `SOURCES.md` is the standing verified record. Today: Tanakh Hebrew (Ta'amei Hamikra, **PD**)
+   + English (JPS 1917, **PD**) from Torah Brain; NT (WEB, **PD**) + cross-references
+   (OpenBible.info, **CC-BY**, attributed) from the NT corpus; the word + lexicon layers
+   (STEPBible TAHOT/TAGNT/TBESH/TBESG, **CC BY 4.0**); the Septuagint (Swete, **CC BY-SA 4.0**
+   — share-alike is viral, so it lives isolated in its own `lxx.parquet`). Sources are fetched
+   at build into a gitignored cache and never re-hosted.
 3. **Interpretation is labelled, sourced, and graded — never asserted as fact.** No
    interpretive edge exists without a `basis` and a `confidence`. The brain distinguishes "the
    NT itself cites this" (high) from "a classical typological reading holds this" (graded

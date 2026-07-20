@@ -11,6 +11,7 @@ Usage:
   python3 pipeline/query_brain.py concordance H5921         # every occurrence of a Strong's # across the canon
   python3 pipeline/query_brain.py concordance parthenos     # ...or search by lemma / transliteration
   python3 pipeline/query_brain.py define H5959              # the lexicon entry for a Strong's # (BDB/Abbott-Smith)
+  python3 pipeline/query_brain.py quotation "Isaiah 7:14"   # MT Hebrew · LXX Greek · the NT verses that cite it
   python3 pipeline/query_brain.py fulfills "Isaiah 7:14"    # NT fulfillments of a Tanakh verse (interpretive)
   python3 pipeline/query_brain.py roots "Matthew 1:23"      # a NT verse's Tanakh roots (interpretive)
   python3 pipeline/query_brain.py thread virgin-birth       # one Messianic thread, its refs + text
@@ -26,7 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 D = ROOT / "data"
 con = duckdb.connect()
 for name, f in [("v", "verses"), ("b", "bridge"), ("i", "interpretive"), ("w", "words"),
-                ("l", "lexicon")]:
+                ("l", "lexicon"), ("x", "lxx")]:
     p = D / f"{f}.parquet"
     if p.exists():
         con.execute(f"CREATE VIEW {f} AS SELECT * FROM '{p}'")
@@ -197,6 +198,42 @@ def define(term):
                   f"(→ query_brain.py concordance {strongs})")
 
 
+def quotation(ref):
+    # The inter-testament hinge: one Tanakh verse in its three witnesses.
+    canon, mt_en = _text(ref)
+    if mt_en is None:
+        print(f"'{ref}' is not in the corpus."); return
+    if canon != "Tanakh":
+        print(f"'{ref}' is {canon}; quotation view expects a Tanakh verse "
+              f"(try: roots \"{ref}\")."); return
+    mt_he = con.sql(f"SELECT text_orig FROM verses WHERE ref = '{ref}'").fetchone()[0]
+    print(f"\n=== {ref} — the three witnesses ===\n")
+    print(f"  MT  (Hebrew)   {mt_he or ''}")
+    print(f"      (English)  {mt_en}")
+    if _has("lxx"):
+        lx = con.sql(f"SELECT text_lxx, lxx_ref FROM lxx WHERE ref = '{ref}'").fetchone()
+        if lx:
+            note = f"  [LXX {lx[1]}]" if lx[1] != ref else ""
+            print(f"  LXX (Greek)    {lx[0]}{note}")
+        else:
+            print("  LXX (Greek)    — (no aligned LXX verse; versification may diverge)")
+    print("\n  NT verses that cite this (corpus apparatus, OpenBible):")
+    citers = con.sql(f"""SELECT from_ref, votes FROM bridge
+                         WHERE to_ref = '{ref}' AND resolved
+                         ORDER BY votes DESC LIMIT 8""").fetchall()
+    if not citers:
+        print("      (none recorded)")
+    for nt_ref, votes in citers:
+        _, t = _text(nt_ref)
+        print(f"    → {nt_ref:<18} {(t or '')[:90]}")
+    thr = con.sql(f"""SELECT DISTINCT id, confidence, title FROM interpretive
+                      WHERE from_ref = '{ref}'""").fetchall()
+    if thr:
+        print("\n  Messianic thread(s) [interpretive]:")
+        for tid, conf, title in thr:
+            print(f"    • {title}  ({conf}) — thread {tid}")
+
+
 def _has(name):
     return con.sql(f"SELECT count(*) FROM information_schema.tables "
                    f"WHERE table_name = '{name}'").fetchone()[0] > 0
@@ -207,7 +244,7 @@ if __name__ == "__main__":
         print(__doc__); sys.exit(0)
     cmd, args = sys.argv[1], sys.argv[2:]
     fns = {"verse": verse, "interlinear": interlinear, "concordance": concordance,
-           "define": define, "fulfills": fulfills, "roots": roots,
+           "define": define, "quotation": quotation, "fulfills": fulfills, "roots": roots,
            "thread": thread, "threads": lambda: threads(),
            "stats": lambda: stats()}
     if cmd not in fns:

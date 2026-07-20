@@ -16,6 +16,7 @@ them read-only, and adds the interpretive layer they deliberately leave out.
 | **One canon** | **31,156 verses** — Tanakh (23,206, Hebrew + JPS 1917, PD) + NT (7,950, WEB, PD), one continuous `ord` from Genesis 1:1 to Revelation 22:21 |
 | **Original languages** | **425,454 words** (STEPBible TAHOT+TAGNT, CC BY 4.0) — every verse word-by-word with Strong's + morphology + gloss; 16,494 distinct Strong's numbers → a canon-wide concordance |
 | **Lexicon** | **22,717 Strong's entries** (STEPBible TBESH+TBESG = BDB + Abbott-Smith, CC BY 4.0) — every word gets a definition; covers 99.8% of the words used |
+| **Septuagint** | **21,863 LXX verses** (Swete 1930, CC BY-SA) — the Greek OT the NT quotes; aligned to the Masoretic refs (96.5%) so you can set MT · LXX · NT side by side |
 | **Corpus apparatus** | **114,595 cross-references** (OpenBible.info, CC-BY) — 84k NT↔NT, 30k NT→Tanakh, resolved against the unified corpus |
 | **Messianic layer** | **24 authored threads → 63 edges** (prophecy→fulfillment, type→antitype, canon-spanning themes), each graded + source-grounded → [`index/messianic-threads.md`](index/messianic-threads.md) |
 
@@ -32,6 +33,7 @@ Bible-Brain never writes to either; it ingests their published parquet and recor
 python3 pipeline/ingest_corpus.py       # both substrates -> data/verses.parquet (license-gated)
 python3 pipeline/fetch_words.py         # STEPBible TAHOT+TAGNT -> data/words.parquet (word layer, CC-BY)
 python3 pipeline/fetch_lexicon.py       # STEPBible TBESH+TBESG -> data/lexicon.parquet (definitions, CC-BY)
+python3 pipeline/fetch_lxx.py           # Swete LXX -> data/lxx.parquet (Greek OT, MT-aligned, CC-BY-SA)
 python3 pipeline/build_bridge.py        # NT crossrefs     -> data/bridge.parquet (canon-labelled)
 python3 pipeline/build_interpretive.py  # interpretive/*.yaml -> data/interpretive.parquet (ref-validated)
 python3 pipeline/build_index.py         # -> index/ (committed human-readable face)
@@ -48,6 +50,7 @@ python3 pipeline/query_brain.py interlinear "Isaiah 7:14" # the verse word-by-wo
 python3 pipeline/query_brain.py concordance H5959         # every occurrence of a Strong's # (Gen→Rev)
 python3 pipeline/query_brain.py concordance parthenos     # ...or by lemma / transliteration
 python3 pipeline/query_brain.py define H5959              # the lexicon entry (BDB / Abbott-Smith)
+python3 pipeline/query_brain.py quotation "Isaiah 7:14"   # MT Hebrew · LXX Greek · the NT verses that cite it
 python3 pipeline/query_brain.py fulfills "Isaiah 7:14"    # NT fulfillments of a Tanakh promise
 python3 pipeline/query_brain.py roots "Matthew 1:23"      # a NT verse's Tanakh roots
 python3 pipeline/query_brain.py thread suffering-servant  # one thread, its refs + text
@@ -67,6 +70,7 @@ discipline is load-bearing: `high` means the NT itself cites the text; don't inf
 - `verses.parquet` — `ref, book, canon, chapter, verse, text_en, text_orig, orig_lang, version, license, layer, ord`
 - `words.parquet` — `ref, canon, book, chapter, verse, word_pos, word_type, surface, translit, gloss, strongs, strongs_full, morph, lemma, version, license, source, layer, resolved`
 - `lexicon.parquet` — `strongs, estrong, lang, lemma, translit, morph_class, gloss, definition, source, license, layer` (join `words.strongs = lexicon.strongs`)
+- `lxx.parquet` — `ref (MT-aligned), lxx_ref (native), book, chapter, verse, text_lxx, version, license, source, layer, resolved` (join `lxx.ref = verses.ref` for Tanakh)
 - `bridge.parquet` — `from_ref, from_book, from_canon, to_ref, to_range, to_canon, votes, source, license, layer, resolved`
 - `interpretive.parquet` — `id, category, title, from_ref, from_range, to_ref, to_range, confidence, basis, note, layer`
 

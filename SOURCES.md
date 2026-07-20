@@ -15,6 +15,7 @@ source is only wired into `pipeline/` after it appears here as **ADMIT**.
 | Cross-references | OpenBible.info | CC-BY | via `~/new-testament` |
 | **Word layer (Strong's + morph + gloss)** | **STEPBible TAHOT + TAGNT** | **CC BY 4.0** | `pipeline/fetch_words.py` |
 | **Lexicon (definitions per Strong's)** | **STEPBible TBESH + TBESG** (BDB + Abbott-Smith, PD) | **CC BY 4.0** | `pipeline/fetch_lexicon.py` |
+| **Septuagint (Greek OT, the hinge)** | **Swete LXX 1930** (github.com/nathans/lxx-swete; text PD) | **CC BY-SA 4.0** ⚠ share-alike is viral — isolated in its own `lxx.parquet` | `pipeline/fetch_lxx.py` |
 
 ### STEPBible-Data — the word/token layer ⭐
 
@@ -42,7 +43,7 @@ source is only wired into `pipeline/` after it appears here as **ADMIT**.
 | SBLGNT | **CC BY 4.0** (relicensed from its old EULA) | critical Greek text | attribution string per sblgnt.com |
 | MACULA Hebrew + Greek (Clear-Bible) | CC BY 4.0 | syntax trees, semantic domains, alignment | **exclude MARBLE word-sense fields** ("used w/ permission") |
 | unfoldingWord UHB + UGNT | CC BY-SA 4.0 | translation↔original alignment | **share-alike is viral** — derivatives must stay BY-SA |
-| Rahlfs LXX **text** (clean PD transcription) | Public Domain | the Septuagint (inter-testament hinge) | text only |
+| Rahlfs LXX **text** (clean PD transcription) | Public Domain | alt Septuagint text | text only; Swete (CC-BY-SA) is what's wired in |
 | TSK cross-references (OpenBible.info) | Public Domain | ~340k extra cross-refs | use original TSK, **not** TSKe |
 | Strong's (openscriptures / morphgnt) | PD text + CC0/CC-BY markup | lexicon join by Strong's # | |
 | BDB Hebrew (openscriptures/HebrewLexicon) | PD text + CC BY 4.0 markup | Hebrew lexicon | |
@@ -57,4 +58,6 @@ source is only wired into `pipeline/` after it appears here as **ADMIT**.
 | **CATSS / CCAT morphological LXX** (incl. the `eliranwong/LXX-Rahlfs-1935` repackaging) | **CC BY-NC-SA + signed user declaration** — NonCommercial + registration wall fails the gate. The Rahlfs *text* is fine (PD); the *morphology* is the licensing problem, so a tagged LXX must be sourced clean or tagged in-house. |
 | Rahlfs-**Hanhart** 2006 revision | Copyright Deutsche Bibelgesellschaft. |
 | Enhanced/Expanded TSK (TSKe, ~800k) | Separately copyrighted derivative. |
+| `eliranwong/LXX-Swete-1930` | Repo is **GPL v3** (non-permissive copyleft) — refused like the KJV, though the Swete text under it is PD. |
+| `sleeptillseven/LXX-Swete` | **CC BY-NC-SA** (NonCommercial). |
 | KJV (as noted in `~/new-testament`) | Source declared GPL; not admitted. |
