@@ -1,0 +1,6 @@
+# Bible-Brain runtime dependencies.
+# For querying + the visualization data + the MCP server (offline use):
+duckdb>=0.9
+mcp>=1.0            # only needed to run mcp-server/server.py
+# For REBUILDING the interpretive layer from YAML (not needed to just use a bundle):
+pyyaml>=6
